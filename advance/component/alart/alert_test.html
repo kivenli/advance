@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .modal-overlay{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            /* visibility: hidden; */
+            opacity: 0;
+            -webkit-transition-duration: 400ms;
+            transition-duration: 400ms;
+        }
+        .modal-overlay-visible{
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-inner {
+            padding: 0.75rem;
+            border-radius: 0.35rem 0.35rem 0 0;
+            position: relative;
+            background: #e8e8e8;
+        }
+
+        .modal-inner:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            right: auto;
+            top: auto;
+            height: 1px;
+            width: 100%;
+            background-color: #b5b5b5;
+            display: block;
+            z-index: 15;
+            -webkit-transform-origin: 50% 100%;
+            transform-origin: 50% 100%;
+        }
+
+        .modal-buttons {
+            height: 2.2rem;
+            overflow: hidden;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+        }
+
+        .modal-button:first-child:last-child {
+            border-radius: 0 0 0.35rem 0.35rem;
+        }
+
+        .modal-button.modal-button-bold {
+            font-weight: 500;
+        }
+
+        .modal-button:last-child {
+            border-radius: 0 0 0.35rem 0;
+        }
+
+        .modal-button:first-child {
+            border-radius: 0 0 0 0.35rem;
+        }
+
+        .modal-button {
+            width: 100%;
+            padding: 0 0.25rem;
+            height: 2.2rem;
+            font-size: 0.85rem;
+            line-height: 2.2rem;
+            text-align: center;
+            color: #0894ec;
+            background: #e8e8e8;
+            display: block;
+            position: relative;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            cursor: pointer;
+            box-sizing: border-box;
+            -webkit-box-flex: 1;
+            -ms-flex: 1;
+        }
+        .modal-title + .modal-text {
+            margin-top: 0.25rem;
+        }
+
+        .modal{
+            width: 13.5rem;
+            position: absolute;
+            z-index: 11;
+            left: 50%;
+            margin-left: -6.75rem;
+            margin-top: 0;
+            top: 50%;
+            text-align: center;
+            border-radius: 0.35rem;
+            opacity: 0;
+            -webkit-transform: translate3d(0, 0, 0) scale(1.185);
+            transform: translate3d(0, 0, 0) scale(1.185);
+            -webkit-transition-property: -webkit-transform, opacity;
+            transition-property: transform, opacity;
+            color: #3d4145;
+        }
+        .modal-in{
+            opacity: 1;
+            -webkit-transition-duration: 400ms;
+            transition-duration: 400ms;
+            -webkit-transform: translate3d(0, 0, 0) scale(1);
+            transform: translate3d(0, 0, 0) scale(1);
+
+        }
+        .modal-out{
+            opacity: 0;
+            -webkit-transition-duration: 400ms;
+            transition-duration: 400ms;
+            -webkit-transform: translate3d(0, 0, 0) scale(0.815);
+            transform: translate3d(0, 0, 0) scale(0.815);
+        }
+
+    </style>
+</head>
+<body>
+    <button class="btn">点我 Alert </button>
+
+</body>
+<script>
+    (function () {
+        var alertest = function (title,text,callback) {
+            var template  = '',timer = null,templateText ='',params= arguments;
+
+            templateText = typeof text == 'function'? '':'<div class="modal-title">'+text+'</div>';
+
+            template =  '<div class="modal-overlay">'
+                +  '<div class="modal">'
+                +      '<div class="modal-inner">'
+                +          '<div class="modal-title">'+ title +'</div>'
+                +            templateText
+                +       '</div>'
+                +       '<div class="modal-buttons">'
+                +           '<span class="modal-button modal-button-bold">确定</span>'
+                +       '</div>'
+                +    '</div>'
+                +'</div>';
+
+            document.body.innerHTML = document.body.innerHTML + template;
+
+            var modal_overlay = document.querySelector('.modal-overlay'),modal = document.querySelector('.modal');
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                modal_overlay.classList.add('modal-overlay-visible');
+                modal.classList.add('modal-in');
+            },50);
+
+            document.querySelector('.modal-buttons').addEventListener('click',function (e) {
+                hideAlert();
+            },false);
+            
+            document.querySelector('.modal').addEventListener('click',function (e) {
+                e.stopPropagation();
+            },false);
+
+            document.querySelector('.modal-overlay').addEventListener('click',function (e) {
+                hideAlert();
+            },false);
+
+            function hideAlert() {
+                modal_overlay.classList.remove('modal-overlay-visible');
+                modal.classList.remove('modal-in');
+                modal.classList.add('modal-out');
+                modal.addEventListener('transitionend',function () {
+                    modal_overlay.remove();
+                },false);
+
+                if(typeof params[1] == 'function') text();
+                else if (typeof params[2] == 'function') callback();
+            }
+        };
+
+        window.alertest = alertest;
+
+    })();
+
+    document.querySelector('body').addEventListener('click',function(e){
+        if(e.target.className == 'btn'){
+            alertest('点我点我',function () {
+            })
+        }
+    })
+
+    
+</script>
+
+
+</html>

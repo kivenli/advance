@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .container{
+             height: 500px;
+             width: 500px;
+        }
+    </style>
+</head>
+<body>
+   <div class="container">
+
+   </div>
+   <script src="echarts.min.js"></script>
+   <script>
+       var container = document.querySelector(".container");
+       var chart = echarts.init(container);
+       var option = {
+               title:{
+                   text:"Test Echart"
+               },
+
+       }
+   </script>
+</body>
+</html>

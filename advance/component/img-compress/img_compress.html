@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>img</title>
+</head>
+<body>
+
+    <div id="preview"></div>
+    <form>
+        <input type="file">
+        <input type="submit">
+    </form>
+
+    <script>
+        var file = document.querySelector("[type=file]");
+        file.addEventListener("change", function(e) {
+            for (var i = 0, f; f = e.target.files[i]; i++) {
+                if (f.type.indexOf("image") !== 0) continue;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.createElement("img");
+                    img.src = e.target.result;
+                    document.getElementById("preview").appendChild(img);
+                };
+                reader.readAsDataURL(f);
+            }
+        }, false);
+
+        var images = document.querySelectorAll("#preview img");
+        var dstWidth = 400, dstHeight = 300;
+        var compressedImages = [];
+        [].forEach.call(images, function (image) {
+            var canvas = document.createElement("canvas");
+            canvas.width = dstWidth;
+            canvas.height = dstHeight;
+            canvas.getContent("2d").drawImage(image); // 这里传入img元素对象
+            var compressed = canvas.toDataURL("image/jpeg", 0.7);
+            compressedImages.push(compressed);
+        });
+
+        function b64toBlob(b64Data, contentType, sliceSize) {
+            contentType = contentType || '';
+            sliceSize = sliceSize || 512;
+
+            var byteCharacters = atob(b64Data);
+            var byteArrays = [];
+
+            for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                var byteNumbers = new Array(slice.length);
+                for (var i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+
+                var byteArray = new Uint8Array(byteNumbers);
+
+                byteArrays.push(byteArray);
+            }
+
+            var blob = new Blob(byteArrays, {type: contentType});
+            return blob;
+        }
+//        var fileBlob = b64toBlob(compressed.substr(23), "image/jpeg");
+//        var fd = new FormData();
+//        fd.append("file", fileBlob);
+//        var xhr = new XMLHttpRequest();
+//        xhr.open("POST", "upload.php");
+//        xhr.send(fd);
+    </script>
+</body>
+</html>

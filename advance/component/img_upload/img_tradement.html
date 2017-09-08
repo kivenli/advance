@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>img</title>
+    <style>
+        *{
+            font-family: "微软雅黑";
+            font-size: 12px;
+        }
+        img{
+            border: 0;
+        }
+        .container{
+            position: relative;
+            width:1000px;
+            height:550px;
+            background: rgba(225,225,225,0.8);
+            padding:0 10px;
+        }
+
+        .chose_file{
+            padding:10px 0;
+        }
+
+        .chose_file label{
+            display: block;
+            width:100px;
+            height:30px;
+            text-align: center;
+            border: 1px solid #0a8ddf;
+            border-radius: 3px;
+            line-height:30px ;
+            background:#fff ;
+            cursor: pointer;
+        }
+
+        #img_upload{
+            opacity: 0;
+        }
+
+        .img_div{
+            position: relative;
+            width:400px;
+            height:400px;
+            text-align: center;
+            vertical-align: center;
+            border: 1px solid #8e8e93;
+            background: #fff;
+        }
+
+        .img_opacity{
+            opacity: 0.5;
+            user-select: none;
+        }
+
+        .img_show{
+            position: absolute;
+            z-index: 5;
+            user-select: none;
+            left:0;
+            top:0;
+            opacity: 1;
+            clip: rect(0px,200px,200px,0px);
+        }
+
+        .btn{
+            position: absolute;
+            left:10px;
+            bottom: 20px;
+            width: 100px;
+            height:30px;
+            cursor: pointer;
+            border: 1px solid #0a8ddf;
+            border-radius: 3px;
+            background: #fff;
+        }
+        .chose_size{
+            position: absolute;
+            left:0;
+            top:0;
+            z-index: 10;
+            box-sizing: border-box;
+            border: 1px solid #fff;
+            overflow: hidden;
+            cursor: move;
+        }
+
+        .zoom_point{
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            right: -1px;
+            bottom: -1px;
+            border: 1px solid #fff;
+            cursor: nw-resize;
+            background: #000;
+            opacity: 0.8;
+            overflow: hidden;
+        }
+
+        .preview_div{
+            position: absolute;
+            top:80px;
+            right:0;
+            width: 500px;
+        }
+
+        .big_img{
+            margin-bottom:10px ;
+        }
+        .preview_big{
+            margin: 20px 0;
+        }
+
+        .small_img{
+            width:40px;
+            height:40px;
+            background: #fff;
+            border: 1px solid #000;
+            margin-bottom:10px ;
+        }
+    </style>
+</head>
+<body>
+
+    <!--1、图片上传-->
+       <!--图片选择 : 1.input type="file" 2.drag : 拖动图片至网页无法实现-->
+
+    <!--2、不同尺寸图片映射-->
+       <!--1.比例计算，在不同尺寸框中动态展示-->
+
+    <!--3、canvas重新裁剪-->
+       <!--1.创建canvas对象，绘制图片边界-->
+       <!--2.创建canvas后再生成图片-->
+
+    <!--4、保存后上传-->
+       <!--将图片保存为base64上传-->
+
+
+    <section class="container">
+        <article class="chose_file">
+            <label for="img_upload">选择图片</label>
+            <input type="file" accept=".png, .jpg, .jpeg"  id="img_upload" />
+        </article>
+        <article class="img_div">
+            <div class="chose_size">
+                <div class="zoom_point"></div>
+            </div>
+        </article>
+        <article class="preview_div">
+            <div class="preview_title">
+                头像预览
+            </div>
+            <div class="preview_big">
+                <div class="big_img"></div>
+
+            </div>
+
+        </article>
+        <button class="btn">点击提交</button>
+    </section>
+    <script>
+
+        var img_upload = document.querySelector("#img_upload"),
+            img_div = document.querySelector('.img_div'),
+            container = document.querySelector('.container'),
+            clip_div = document.querySelector('.chose_size');
+            big_img = document.querySelector('.big_img');
+            small_img = document.querySelector('.small_img');
+
+        //点击图片上传
+        img_upload.addEventListener('change',function (e) {
+            img_preview(e.target.files)
+        },false);
+
+        //图片预览
+        function img_preview(file) {
+
+            //移除上传预览的图片
+            Array.prototype.forEach.call(img_div.children,function (dom) {
+                if(dom.tagName ==='IMG'){
+                    dom.remove();
+                }
+            });
+
+            Array.prototype.forEach.call(file, function (image) {
+                if (image.type.indexOf("image") !== 0) return;
+                var imgPreview = new FileReader();
+                imgPreview.onload = function (e) {
+
+                    //添加图片并创建副本图片
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('img_opacity');
+                    img.draggable =false;
+                    var img_show = img.cloneNode();
+                    img_show.classList.remove('img_opacity');
+                    img_show.classList.add("img_show");
+                    img_show.draggable = false;
+                    img_div.appendChild(img);
+                    img_div.appendChild(img_show);
+
+                    //图片渲染出后取值，缩放图片
+                    setTimeout(function () {
+
+                        if (img.width >= img.height) {
+                            img.style.width = "100%";
+                            img_show.style.width = "100%";
+                        } else {
+                            img_show.style.height = "100%";
+                            img.style.height = "100%";
+                        }
+                        img_relocation(img,img_show,clip_div);
+
+                        //通过图片生成canvas
+                        var cvs = document.createElement('canvas');
+                        cvs.width = img_div.offsetWidth;
+                        cvs.height = img_div.offsetHeight;
+                        var context = cvs.getContext('2d');
+                        context.drawImage(img_show,0,0,cvs.width,cvs.height);
+                        cropImage(cvs,clip_div.offsetLeft,clip_div.offsetTop,clip_div.offsetWidth,clip_div.offsetHeight);
+
+                        //裁剪区域拖动
+                        (function () {
+                            var oElem = clip_div;
+
+                            var startX = 0;
+                            var startY = 0;
+
+                            var sourceX = 0;
+                            var sourceY = 0;
+
+                            oElem.addEventListener('mousedown', start, false);
+
+                            function start(event) {
+                                startX = event.pageX;
+                                startY = event.pageY;
+
+                                var pos = getTargetPos(oElem);
+
+                                sourceX = pos.x;
+                                sourceY = pos.y;
+
+                                document.addEventListener('mousemove', move, false);
+                                document.addEventListener('mouseup', end, false);
+                            }
+
+                            function move(event) {
+                                var currentX = event.pageX;
+                                var currentY = event.pageY;
+
+                                var distanceX = currentX - startX;
+                                var distanceY = currentY - startY;
+
+                                setTargetPos(oElem, {
+                                    x: (sourceX + distanceX).toFixed(),
+                                    y: (sourceY + distanceY).toFixed()
+                                },img_show)
+
+                                cropImage(cvs,clip_div.offsetLeft,clip_div.offsetTop,clip_div.offsetWidth,clip_div.offsetHeight)
+                            }
+
+                            function end(event) {
+                                document.removeEventListener('mousemove', move);
+                                document.removeEventListener('mouseup', end);
+                            }
+
+                            function getStyle(elem, property) {
+                                // 低版本ie通过currentStyle来获取元素的样式，其他浏览器通过getComputedStyle来获取
+                                return document.defaultView.getComputedStyle ? document.defaultView.getComputedStyle(elem, false)[property] : elem.currentStyle[property];
+                            }
+
+                            function getTargetPos(elem) {
+                                var pos = {x: 0, y: 0};
+                                    if(getStyle(elem, 'position') == 'static') {
+                                        elem.style.position = 'relative';
+                                        return pos;
+                                    } else {
+                                        var x = parseInt(getStyle(elem, 'left') ? getStyle(elem, 'left') : 0);
+                                        var y = parseInt(getStyle(elem, 'top') ? getStyle(elem, 'top') : 0);
+                                        return pos = {
+                                            x: x,
+                                            y: y
+                                        }
+                                    }
+                            }
+
+                            function setTargetPos(elem, pos,img) {
+                                    if(pos.x < img.offsetLeft){
+                                        pos.x = img.offsetLeft ;
+                                    }else if( pos.x > img.offsetWidth + img.offsetLeft - elem.offsetWidth){
+                                        pos.x = img.offsetWidth + img.offsetLeft - elem.offsetWidth
+                                    }
+
+                                    if(pos.y < img.offsetTop){
+                                        pos.y = img.offsetTop
+                                    }else if(pos.y > img.offsetHeight + img.offsetTop - elem.offsetHeight){
+                                        pos.y = img.offsetHeight + img.offsetTop - elem.offsetHeight
+                                    }
+
+                                    elem.style.left = pos.x + 'px';
+                                    elem.style.top = pos.y + 'px';
+
+                                    pos.x = parseInt(pos.x);
+                                    pos.y = parseInt(pos.y);
+                                    //添加图片clip属性
+                                    var clip ={
+                                        top: pos.y - parseInt(img.offsetTop),
+                                        right: pos.x + parseInt(elem.offsetWidth) - parseInt(img.offsetLeft),
+                                        bottom:pos.y + parseInt(elem.offsetHeight) -parseInt(img.offsetTop),
+                                        left:pos.x - parseInt(img.offsetLeft)
+                                    };
+
+                                    img.style.clip = 'rect('+clip.top+'px,'+clip.right+'px,'+clip.bottom+'px,'+clip.left+'px)';
+
+                                return elem;
+                            }
+
+
+                        })();
+
+                        //裁剪区域缩放
+                        (function () {
+
+                            var start_point ={
+                                left:0,
+                                top:0
+                            }, move_point ={
+                                left:0,
+                                top:0
+                            },clip_original ={
+                                width:0,
+                                height:0
+                            };
+
+                            document.querySelector('.zoom_point').addEventListener('mousedown',move_start,false);
+
+                            function move_start(event) {
+
+                                clip_original.width = clip_div.offsetWidth;
+                                clip_original.height =clip_div.offsetHeight;
+
+                                start_point.left = parseInt(event.pageX);
+                                start_point.top = parseInt(event.pageY);
+                                event.stopPropagation();
+
+                                document.addEventListener('mousemove',moving,false);
+                                document.addEventListener('mouseup',move_end,false);
+                            }
+                            
+                            function moving(event) {
+                                move_point.left = parseInt(event.pageX);
+                                move_point.top = parseInt(event.pageY);
+
+                                var distance ={
+                                    left: parseInt(move_point.left - start_point.left),
+                                    top : parseInt(move_point.top -start_point.top)
+                                };
+
+                                var change_size = {
+                                    width : parseInt(clip_original.width) + distance.left,
+                                    height: parseInt(clip_original.height) + distance.top
+                                };
+
+                                if(change_size.width > parseInt(img.offsetWidth) + parseInt(img.offsetLeft) - parseInt(clip_div.offsetLeft)){
+                                    change_size.width = parseInt(img.offsetWidth) + parseInt(img.offsetLeft) - parseInt(clip_div.offsetLeft)
+                                }
+
+                                if(change_size.height > parseInt(img.offsetHeight) + parseInt(img.offsetTop) - parseInt(clip_div.offsetTop)){
+                                    change_size.height = parseInt(img.offsetHeight) + parseInt(img.offsetTop) - parseInt(clip_div.offsetTop)
+                                }
+
+                                if(change_size.width >= change_size.height){
+                                    clip_div.style.width = change_size.height + 'px';
+                                    clip_div.style.height = change_size.height + 'px';
+                                }else{
+                                    clip_div.style.width = change_size.width + 'px';
+                                    clip_div.style.height = change_size.width + 'px';
+                                }
+
+                                var clip_img ={
+                                     top: parseInt(clip_div.offsetTop) - parseInt(img_show.offsetTop),
+                                     right: parseInt(clip_div.offsetLeft) + parseInt(clip_div.offsetWidth) - parseInt(img_show.offsetLeft),
+                                     bottom: parseInt(clip_div.offsetTop) + parseInt(clip_div.offsetHeight) -parseInt(img_show.offsetTop),
+                                     left: parseInt(clip_div.offsetLeft) - parseInt(img_show.offsetLeft)
+                                };
+
+                                img_show.style.clip = 'rect('+clip_img.top+'px,'+clip_img.right+'px,'+clip_img.bottom+'px,'+clip_img.left+'px)';
+
+                                cropImage(cvs,clip_div.offsetLeft,clip_div.offsetTop,clip_div.offsetWidth,clip_div.offsetHeight);
+                                event.stopPropagation();
+                            }
+
+                            function move_end(event) {
+                                document.removeEventListener('mousemove',moving,false);
+                                document.removeEventListener('mouseup',move_end,false);
+                            }
+
+
+                        })();
+
+                    }, 0);
+                };
+                imgPreview.readAsDataURL(image)
+            });
+        }
+
+        //裁剪图片重定位
+        function img_relocation(img_opacity,img_clip,clipDiv) {
+            var img_hide ={
+                left:img_opacity.offsetLeft,
+                top: img_opacity.offsetTop,
+                width:img_opacity.offsetWidth,
+                height:img_opacity.offsetHeight
+            };
+            var init_size = clip_window(img_hide);
+            img_clip.style.top = img_hide.top  + 'px';
+            img_clip.style.left = img_hide.left  +'px';
+            img_clip.style.clip = 'rect(0,'+ init_size +'px,'+ init_size +'px,0)';
+            clipDiv.style.width = init_size + 'px';
+            clipDiv.style.height = init_size + 'px';
+            clipDiv.style.left = img_hide.left +'px';
+            clipDiv.style.top = img_hide.top + 'px';
+
+        }
+
+        //裁剪窗口初初始化
+        function clip_window(img) {
+            if(img.height >= img.width){
+                if(img.width >= img.height/2){
+                    return img.height/2
+                }else{
+                    return img.width
+                }
+            }else{
+                if(img.height >= img.width/2){
+                    return img.width/2
+                }else{
+                    return img.height
+                }
+            }
+        }
+
+        //canvas图像裁剪
+        function cropImage(targetCanvas, x, y, width, height) {
+            var targetctx = targetCanvas.getContext('2d');
+            var targetctxImageData = targetctx.getImageData(x, y, width, height); // sx, sy, sWidth, sHeight
+
+            var c = document.createElement('canvas');
+            var ctx = c.getContext('2d');
+
+            c.width = width;
+            c.height = height;
+
+            ctx.rect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.putImageData(targetctxImageData, 0, 0); // imageData, dx, dy
+
+            var newImg = document.createElement('img');
+                newImg.src = c.toDataURL('image/jpeg',1);
+            big_img.innerHTML = '';
+            big_img.appendChild(newImg);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lazyload</title>
+    <style>
+        .container{
+            width:500px;
+            height:800px;
+            margin: 0 auto;
+            border: 1px solid #ff6600;
+            overflow: auto;
+        }
+        .img_div{
+            width:250px;
+            height:250px;
+            box-sizing: border-box;
+            padding:2px;
+            border:1px solid skyblue;
+            margin:10px auto;
+        }
+        img{
+            width:100%;
+            height:100%;
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+        .lazing{
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="img_div">
+            <img data-src="../../asset/img/drag1.jpg" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag2.jpg" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag3.jpg" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag4.jpg" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag5.jpg" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag6.png" class="lazy_img" />
+        </div>
+        <div class="img_div">
+            <img data-src="../../asset/img/drag7.jpg" class="lazy_img" />
+        </div>
+    </div>
+
+    <script src="../../js-library/Ly.js"></script>
+    <script>
+        var container = document.querySelector('.container'),
+            img_divs = Array.prototype.slice.call(document.querySelectorAll('.img_div'),0),
+            throttle = null,
+            timer =null;
+
+        function clientView(dom_parent,dom_child,offset) {
+            var _parent ={
+                top: dom_parent.getBoundingClientRect().top,
+                left: dom_parent.getBoundingClientRect().left,
+                bottom : dom_parent.getBoundingClientRect().bottom
+            },_child ={
+                top: dom_child.getBoundingClientRect().top,
+                left: dom_child.getBoundingClientRect().left,
+                bottom: dom_child.getBoundingClientRect().bottom
+            },top,bottom;
+
+            top = _child.top >= _parent.top + offset;
+            bottom = _child.bottom - dom_child.offsetHeight <= _parent.bottom + offset;
+            return  top && bottom
+        }
+        
+        function lazy() {
+            img_divs.forEach(function (dom,key) {
+                if(clientView(container,dom,10)){
+                    clearTimeout(timer);
+                    dom.firstElementChild.setAttribute('src',dom.firstElementChild.getAttribute('data-src'));
+                    dom.firstElementChild.classList.add('lazing');
+                    timer = setTimeout(function () {
+                        img_divs.splice(key,1);
+                    },0);
+                }
+            });
+        }
+
+        lazy();
+        throttle = _.throttle(lazy,20);
+        container.addEventListener('scroll',throttle,false)
+
+    </script>
+</body>
+</html>

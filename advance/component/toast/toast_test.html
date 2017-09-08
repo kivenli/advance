@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .toast{
+            position:absolute;
+            top:50%;
+            left:50%;
+            width: 8rem;
+            height: 4rem;
+            text-align: center;
+            line-height:4rem;
+            border-radius: 3rem;
+            background: black;
+            color:#fff;
+        }
+        .modal{
+            opacity: 0;
+            -webkit-transform: translate3d(0, 0, 0) scale(1.185);
+                    transform: translate3d(0, 0, 0) scale(1.185);
+            -webkit-transition-property: -webkit-transform, opacity;
+                    transition-property: transform, opacity;
+        }
+        .modal-in{
+            display: block;
+            opacity: 1;
+            -webkit-transition-duration: 400ms;
+                    transition-duration: 400ms;
+            -webkit-transform: translate3d(0, 0, 0) scale(1);
+                    transform: translate3d(0, 0, 0) scale(1);
+
+        }
+        .modal-out{
+            opacity: 0;
+            -webkit-transition-duration: 400ms;
+                    transition-duration: 400ms;
+            -webkit-transform: translate3d(0, 0, 0) scale(0.815);
+                    transform: translate3d(0, 0, 0) scale(0.815);
+        }
+
+    </style>
+</head>
+<body>
+
+    <button class="btn1">点击出现toast1</button>
+    <button class="btn2">点击出现toast2</button>
+
+    <script>
+        (function () {
+            var toast = function (message,backgroundColor) {
+
+                var newEl = document.createElement('div'),timer = null;
+                newEl.classList.add('toast','modal');
+                document.body.append(newEl);
+
+                var toastEl = document.querySelectorAll('.toast');
+
+                Array.prototype.forEach.call(toastEl,function (dom) {
+                    if(message){
+                        dom.innerHTML  = message;
+                    }
+                    if(backgroundColor){
+                        dom.style.backgroundColor =  backgroundColor
+                    }
+
+                    openToast(dom,function () {
+                        timer =  setTimeout(function () {
+                            dom.classList.remove('modal-in');
+                            dom.classList.add('modal-out');
+
+                            dom.addEventListener('transitionend',function () {
+                                    dom.remove();
+                            },false)
+                        },1300)
+                    });
+                });
+            };
+
+            function openToast(node,fn) {
+                var timer = null;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                     node.classList.add('modal-in');
+                },50);
+                fn();
+            };
+
+            window.toast = toast;
+        })();
+
+        document.querySelector('.btn1').addEventListener('click',function () {
+            toast('点击成功1','green');
+        });
+
+        document.querySelector('.btn2').addEventListener('click',function () {
+            toast('点击成功2','red');
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+        *{
+            margin:0 ;
+            padding:0;
+        }
+
+        .testDiv {
+            margin: 0 auto;
+            height:400px;
+            width:400px;
+            border:1px solid #000;
+            overflow: scroll;
+        }
+        .test1{
+            height:100px;
+            width:100px;
+            border:1px solid aqua;
+            margin: 30px auto ;
+        }
+
+        .changeBox{
+            height:0;
+            width:50px;
+            margin: 10px;
+            background-color:rgba(110,110,110,1);
+            transition-property: height;
+            transition-duration:300ms ;
+            transition-timing-function: ease-in-out;
+            overflow: hidden;
+            color:#fff;
+        }
+
+        .active{
+            height:50px;
+        }
+
+    </style>
+</head>
+<body>
+        <div class="testDiv">
+            <div class="test1">
+                <div class="changeBox">11</div>
+            </div>
+            <div class="test1">
+                <div class="changeBox">12</div>
+            </div>
+            <div class="test1">
+                <div class="changeBox">13</div>
+            </div>
+            <div class="test1">
+                <div class="changeBox">14</div>
+            </div>
+            <div class="test1">
+                <div class="changeBox">15</div>
+            </div>
+            <div class="test1">
+                <div class="changeBox">16</div>
+            </div>
+        </div>
+
+    <script src="Ly.js"></script>
+    <script>
+
+        var boxBig = document.querySelector('.testDiv'),boxSmall = document.querySelectorAll(".test1");
+        var boxBig_modal = boxBig.getBoundingClientRect();
+        var animationState = true;
+
+        function isInClient(dom_parent,dom_child,offset){
+
+          var boxSize_parent =  dom_parent.getBoundingClientRect(),
+              boxSize_child = dom_child.getBoundingClientRect(),
+              top,left,right,bottom,
+              h = offset || 20;
+
+          top  =  boxSize_parent.top + h <=  boxSize_child.top;
+          left =  boxSize_child.left >= 0;
+          right = boxSize_child.right >= 0;
+          bottom = boxSize_parent.bottom + h >= boxSize_child.bottom;
+
+          return top && left && right && bottom;
+        }
+
+        function inClient() {
+            Array.prototype.forEach.call(boxSmall,function (value,key) {
+                if(isInClient(boxBig,value)){
+                    value.firstElementChild.classList.add('active');
+                    if(key == boxSmall.length-1 && value.firstElementChild.classList.contains('active')){
+                        boxBig.removeEventListener('scroll',throttle,false);
+                    }
+                }
+            });
+        }
+
+        function scrollAction(dom1,dom2) {
+            var flag = isInClient(dom1,dom2,10)
+        }
+
+        var throttle = _.throttle(inClient,20,{trailing: false});
+        inClient();
+        boxBig.addEventListener('scroll',throttle,false);
+
+
+    </script>
+</body>
+</html>

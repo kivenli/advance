@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>H5 Dom APi test</title>
+    <style>
+
+
+        .div_1{
+            font-size:20px;
+        }
+
+        .css_test{
+            width:100px;
+            height:100px;
+            margin-left:50%;
+            margin-top:10%;
+            background-color:black;
+            -webkit-transition-property: border-radious;
+            -webkit-transition-duration:2.5s ;
+            -webkit-transition-timing-function:ease;
+            -webkit-animation-delay: 1.5s;
+            transition:border-radious,2.5s,ease,1.5s;
+        }
+
+        .css_test:hover{
+            border-radius: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="div">
+        <div class="div_1">1</div>
+        <div class="div_2">2</div>
+        <div class="div_3">3</div>
+    </div>
+
+    <div class="css_test">
+
+    </div>
+
+    <script>
+        var div = document.querySelectorAll(".div div");
+        var div_1= document.querySelector('.div_3').previousElementSibling;
+
+        Array.prototype.forEach.call(div,function (item) {
+            item.addEventListener("click",function () {
+                this.classList.toggle("red");
+                this.classList.toggle("div_1");
+            },false);
+        });
+
+
+        var  arr = [11,22,33,44,55];
+
+        arr.forEach(function (value,key) {
+            console.log('value='+value+'----key'+key);
+        });
+
+        var arr1 =  arr.filter(function (value,key) {
+
+             return value === 11;
+        });
+        console.log(arr1);
+
+        var arr2 = arr.map(function (value,key) {
+
+             return value+1;
+        });
+        console.log(arr2);
+
+        var result = arr.some(function (value,key) {
+
+            return value-66 > 11;
+
+        });
+        console.log(result);
+
+        var new_a =function(){
+             var array = [];
+             for(var i = 0;i< 10;i++){
+                   array[i] = function(){
+                     return i
+                 }
+             };
+
+             return array;
+        };
+
+        console.log(new_a()[2]())
+         var bibao =  function createFunctions() {
+            var result = new Array();
+            for (var i = 0; i < 10; i++) {
+                result[i] = function (num) {
+                        return function(){
+                            return num;
+                        }
+                }(i)
+            }
+            return result;
+        };
+
+        console.log(bibao());
+
+        (function(){
+            var divObject = {
+                zero:document.querySelector(".div"),
+                first:document.querySelector(".div_1"),
+                second:document.querySelector(".div_2"),
+                third:document.querySelector(".div_3")
+            };
+
+            console.log("获取到的dom="+divObject.zero.childNodes);
+            console.log("获取到的dom="+divObject.zero.lastElementChild.className);
+            console.log("获取到的dom="+divObject.zero.lastChild.classList);
+            console.log("获取到的dom="+divObject.zero.lastElementChild.previousElementSibling.className);
+            console.log("获取到的dom="+divObject.zero);
+
+            console.log("获取到的属性="+ divObject.zero.lastElementChild.getAttribute('style'));
+            console.log("获取到的属性="+ divObject.zero.lastElementChild.style);
+
+        })();
+
+
+
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> search </title>
+    <style>
+        .test_input{
+            width:500px;
+            height:300px;
+            background: rgba(110,110,110,0.3);
+            padding:40px;
+        }
+        input{
+            width:400px;
+            height:30px;
+            margin-bottom: 100px;
+            border:0;
+            border-radius: 10px;
+            line-height: 30px;
+            font-size:20px;
+        }
+        .show{
+            background: aqua;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test_input">
+        <input class="inp" type="text" />
+        <input class="show" type="text" />
+    </div>
+
+    <script src="Ly.js"></script>
+    <script>
+
+        var debounce = _.debounce(function () {
+            document.querySelector('.show').value = document.querySelector('.inp').value;
+            console.log(+1);
+        },300);
+
+        document.querySelector('.inp').addEventListener('input',debounce,false);
+
+    </script>
+</body>
+</html>

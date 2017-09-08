@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>drag event</title>
+    <style>
+        .img_drag{
+            float: left;
+            box-sizing: border-box;
+            width:20%;
+            border:2px solid #0a8ddf;
+            padding:2px;
+            margin:2px;
+            text-align: center;
+        }
+        .img_drag img{
+            width:100%;
+            cursor: zoom-in;
+            transition: all .3s;
+        }
+
+        .img_scale{
+            position: relative;
+            z-index: 9999;
+            cursor: zoom-out;
+            will-change: transform;
+        }
+
+        .whiteBack{
+            position:fixed;
+            z-index: 1000;
+            width: 100%;
+            height:100%;
+            background-color:#fff;
+            opacity: 0;
+            transition: opacity .3s;
+            will-change: opacity;
+        }
+
+        .changeOpacity{
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="img_drag" id ='img_drag1'>
+            <img src="../../asset/img/drag1.jpg" id="drag1"/>
+        </div>
+
+        <div class="img_drag" id ='img_drag2'>
+            <img src="../../asset/img/drag2.jpg" id="drag2"/>
+        </div>
+        <div class="img_drag" id ='img_drag3'>
+            <img src="../../asset/img/drag3.jpg" id="drag3"/>
+        </div>
+        <div class="img_drag" id ='img_drag4'>
+            <img src="../../asset/img/drag4.jpg" id="drag4"/>
+        </div>
+        <div class="img_drag" id ='img_drag5'>
+            <img src="../../asset/img/drag5.jpg" id="drag5"/>
+        </div>
+
+        <div class="img_drag" id ='img_drag6'>
+            <img src="../../asset/img/drag6.png" id="drag6"/>
+        </div>
+
+        <div class="img_drag" id ='img_drag7'>
+            <img src="../../asset/img/drag7.jpg" id="drag7"/>
+        </div>
+
+        <div class="img_drag" id ='img_drag8'>
+            <img src="../../asset/img/drag8.jpg" id="drag8"/>
+        </div>
+    </div>
+
+    <script>
+
+        /* Drag */
+        var container = document.querySelector('.container');
+
+        //监听的事件
+        container.addEventListener('dragstart',dragStart,false);
+        container.addEventListener('drop',exchangeElement,false);
+        container.addEventListener('dragover',function (e) {
+            e.preventDefault();
+        },false);
+        
+        function dragStart(e) {
+            e.dataTransfer.setData('data', e.target.id + ';' + e.target.parentElement.id);
+        };
+        
+        function exchangeElement(e) {
+            e.preventDefault();
+
+            var el = e.target;
+            var parentEl, childEl;
+            var data = e.dataTransfer.getData('data').split(";");
+
+            if(el.tagName.toLowerCase() === 'div'){
+                parentEl = el;
+                childEl = el.querySelector('img');
+            }else{
+                parentEl = el.parentElement;
+                childEl =  el;
+            }
+
+            if(!parentEl.classList.contains('img_drag')){
+                return;
+            }
+
+            parentEl.appendChild(document.getElementById(data[0]));
+            document.getElementById(data[1]).appendChild(childEl);
+        };
+
+
+
+        /* zoom-in / zoom out */
+        var imgs = document.querySelectorAll('.img_drag img');
+        Array.prototype.forEach.call(imgs,function (value) {
+            value.addEventListener('click',function () {
+                if(this.classList.contains('img_scale')){
+                    zoomIn(this)
+                }else{
+                    zoomOut(this)
+                }
+            },false);
+        });
+
+
+        function zoomOut(dom) {
+
+             var point_x = document.documentElement.clientWidth / 2;
+             var point_y = document.documentElement.clientHeight/ 2;
+             var scale_original_width = document.documentElement.clientWidth * 0.5;
+             var scale_original_height = document.documentElement.clientHeight * 0.5;
+             var whiteBack = document.createElement('div');
+             var timer = null;
+
+             //创建遮罩
+             whiteBack.classList.add('whiteBack');
+             document.body.appendChild(whiteBack);
+             timer = setTimeout(function () {
+                 whiteBack.classList.add('changeOpacity');
+             },30);
+
+
+             var client_location = dom.getBoundingClientRect(),client_size = dom;
+             //计算当前中心点和预计中心点的距离
+             var client_x = client_location.left + client_size.width /2, client_y = client_location.top + client_size.height /2;
+
+             var move_x = point_x - client_x,move_y = point_y - client_y;
+             var move_scale ;
+
+             //以宽计算scale
+             if(client_size.width >= client_size.height){
+                    if( scale_original_width / client_size.width > 1){
+                        move_scale = scale_original_width / client_size.width;
+                    }else{
+                        move_scale = 1;
+                    }
+             //以高计算scale
+             }else{
+                 if( scale_original_height / client_size.height > 1){
+                     move_scale = scale_original_height / client_size.height;
+                 }else{
+                     move_scale = 1;
+                 }
+             }
+
+             dom.classList.add('img_scale');
+             dom.style.WebkitTransform = 'translate('+ move_x + 'px,'+ move_y +'px) scale('+ move_scale +')' ;
+             dom.style.cursor = "zoom-out";
+        };
+
+        function zoomIn(dom) {
+             document.querySelector('.whiteBack').remove();
+             dom.classList.remove('img_scale');
+             dom.style.cursor = "zoom-in";
+             dom.style.transform = 'none';
+        }
+    </script>
+</body>
+</html>

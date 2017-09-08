@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>toast</title>
+    <link rel="stylesheet" href="../sm.css" />
+</head>
+<body>
+     <button class="btn">
+         点击出现toast
+     </button>
+
+     <script src="../zepto.min.js"></script>
+     <script src="../sm.js"></script>
+     <script>
+         document.querySelector(".btn").addEventListener("click",function () {
+             document.body.innerHTML +='<div></div>';
+         })
+     </script>
+</body>
+</html>
